@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import requests
 import os
 
@@ -6,9 +6,7 @@ app = Flask(__name__)
 
 @app.route("/chat", methods=["POST"])
 def chat():
-
     message = request.json["message"]
-
     api_key = os.environ["GEMINI_API_KEY"]
 
     url = (
@@ -27,5 +25,10 @@ def chat():
     }
 
     response = requests.post(url, json=payload)
-
-    return jsonify(response.json())
+    
+    try:
+        response_data = response.json()
+        ai_response_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
+        return ai_response_text
+    except (KeyError, IndexError):
+        return "エラーが発生しました", 500
