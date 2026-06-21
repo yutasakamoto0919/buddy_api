@@ -1,35 +1,22 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import requests
 import os
 import sqlite3
-import os
 
 app = Flask(__name__)
 DB_FILE = "chat_history.db"
 
 def init_db():
-    print("Initializing database...")
-
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         role TEXT NOT NULL,
         content TEXT NOT NULL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
-
     conn.commit()
-
-    cursor.execute(
-        "SELECT name FROM sqlite_master WHERE type='table'"
-    )
-
-    print(cursor.fetchall())
-
     conn.close()
 
 
@@ -79,12 +66,21 @@ def chat():
 
 
 @app.route("/history", methods=["GET"])
-def send():
+def history():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM history")
-
+    cursor.execute("SELECT id, role, content, timestamp FROM history")
     rows = cursor.fetchall()
     conn.close()
-    return(rows)
+
+    history = [
+        {
+            "id": row[0],
+            "role": row[1],
+            "content": row[2],
+        }
+        for row in rows
+    ]
+
+    return jsonify(history)
