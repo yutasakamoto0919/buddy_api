@@ -13,7 +13,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         role TEXT NOT NULL,
-        content TEXT NOT NULL,
+        content TEXT NOT NULL
     )
     """)
     conn.commit()
@@ -70,7 +70,7 @@ def history():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, role, content, timestamp FROM history")
+    cursor.execute("SELECT id, role, content FROM history")
     rows = cursor.fetchall()
     conn.close()
 
