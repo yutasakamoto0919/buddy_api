@@ -2,13 +2,17 @@ from flask import Flask, request
 import requests
 import os
 import sqlite3
+import os
 
 app = Flask(__name__)
 DB_FILE = "chat_history.db"
 
 def init_db():
+    print("Initializing database...")
+
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +21,15 @@ def init_db():
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
     conn.commit()
+
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    )
+
+    print(cursor.fetchall())
+
     conn.close()
 
 
@@ -57,7 +69,7 @@ def chat():
         ai_response_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
         cursor.execute(
             "INSERT INTO history (role, content) VALUES (?, ?)",
-            ("user", ai_response_text)
+            ("assistant", ai_response_text)
         )
         conn.commit()
         conn.close()
@@ -68,7 +80,7 @@ def chat():
 
 @app.route("/history", methods=["GET"])
 def send():
-    conn = sqlite3.connect("chat.db")
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM history")
