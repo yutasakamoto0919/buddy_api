@@ -49,6 +49,21 @@ def create_chat():
     conn.close()
     return jsonify({"id": chat_id, "title": "無題のチャット"})
 
+@app.route("/rename-chat", methods=["POST"])
+def rename_chat():
+    chat_id = request.json["chat_id"]
+    newname = request.json["new_name"]
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("""
+    UPDATE chats
+    SET title = ?
+    WHERE id = ?
+    """, (newname, chat_id))
+    chat_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
 
 @app.route("/send", methods=["POST"])
 def send():
